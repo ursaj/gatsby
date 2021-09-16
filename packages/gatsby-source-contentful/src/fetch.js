@@ -1,9 +1,10 @@
 // @ts-check
-const contentful = require(`contentful`)
-const _ = require(`lodash`)
-const chalk = require(`chalk`)
-const { formatPluginOptionsForCLI } = require(`./plugin-options`)
-const { CODES } = require(`./report`)
+import chalk from "chalk"
+import { createClient } from "contentful"
+import _ from "lodash"
+
+import { formatPluginOptionsForCLI } from "./plugin-options"
+import { CODES } from "./report"
 
 /**
  * Generate a user friendly error message.
@@ -135,7 +136,7 @@ function createContentfulClientOptions({
   return contentfulClientOptions
 }
 
-async function fetchContent({ syncToken, pluginConfig, reporter }) {
+export async function fetchContent({ syncToken, pluginConfig, reporter }) {
   // Fetch articles.
   let syncProgress
   const pageLimit = pluginConfig.get(`pageLimit`)
@@ -143,7 +144,7 @@ async function fetchContent({ syncToken, pluginConfig, reporter }) {
     pluginConfig,
     reporter,
   })
-  const client = contentful.createClient(contentfulClientOptions)
+  const client = createClient(contentfulClientOptions)
 
   // The sync API puts the locale in all fields in this format { fieldName:
   // {'locale': value} } so we need to get the space and its default local.
@@ -318,14 +319,12 @@ ${formatPluginOptionsForCLI(pluginConfig.getOriginalPluginOptions(), errors)}`,
   return result
 }
 
-module.exports.fetchContent = fetchContent
-
-async function fetchContentTypes({ pluginConfig, reporter }) {
+export async function fetchContentTypes({ pluginConfig, reporter }) {
   const contentfulClientOptions = createContentfulClientOptions({
     pluginConfig,
     reporter,
   })
-  const client = contentful.createClient(contentfulClientOptions)
+  const client = createClient(contentfulClientOptions)
   const pageLimit = pluginConfig.get(`pageLimit`)
   const sourceId = `${pluginConfig.get(`spaceId`)}-${pluginConfig.get(
     `environment`
@@ -420,8 +419,6 @@ ${formatPluginOptionsForCLI(pluginConfig.getOriginalPluginOptions(), errors)}`,
 
   return contentTypes
 }
-
-module.exports.fetchContentTypes = fetchContentTypes
 
 /**
  * Gets all the existing entities based on pagination parameters.

@@ -1,15 +1,22 @@
 // @ts-check
+import { createClient } from "contentful"
+import fs from "fs-extra"
 import _ from "lodash"
-const fs = require(`fs-extra`)
-const v8 = require(`v8`)
-const { createClient } = require(`contentful`)
+import v8 from "v8"
 
-import normalize from "./normalize"
-const { createPluginConfig } = require(`./plugin-options`)
-const { fetchContent } = require(`./fetch`)
-const { CODES } = require(`./report`)
 import { downloadContentfulAssets } from "./download-contentful-assets"
+import { fetchContent } from "./fetch"
 import { getFileSystemCachePath } from "./fs-cache"
+import {
+  buildEntryList,
+  buildForeignReferenceMap,
+  buildResolvableSet,
+  createAssetNodes,
+  createNodesForContentType,
+  makeId,
+} from "./normalize"
+import { createPluginConfig } from "./plugin-options"
+import { CODES } from "./report"
 
 const conflictFieldPrefix = `contentful`
 
@@ -119,11 +126,17 @@ export async function sourceNodes(
     )
     const dataCacheBuffer = await fs.readFile(fsCacheFilePath)
     ;({
+      // @ts-ignore
       currentSyncData,
+      // @ts-ignore
       contentTypeItems,
+      // @ts-ignore
       tagItems,
+      // @ts-ignore
       defaultLocale,
+      // @ts-ignore
       locales,
+      // @ts-ignore
       space,
     } = v8.deserialize(dataCacheBuffer))
     console.log({
@@ -325,7 +338,7 @@ export async function sourceNodes(
 
   const { assets } = mergedSyncData
 
-  const entryList = normalize.buildEntryList({
+  const entryList = buildEntryList({
     mergedSyncData,
     contentTypeItems,
   })
@@ -341,14 +354,14 @@ export async function sourceNodes(
 
   // Create map of resolvable ids so we can check links against them while creating
   // links.
-  const resolvable = normalize.buildResolvableSet({
+  const resolvable = buildResolvableSet({
     existingNodes,
     entryList,
     assets,
   })
 
   // Build foreign reference map before starting to insert any nodes
-  const foreignReferenceMap = normalize.buildForeignReferenceMap({
+  const foreignReferenceMap = buildForeignReferenceMap({
     contentTypeItems,
     entryList,
     resolvable,
@@ -397,7 +410,7 @@ export async function sourceNodes(
     const localizedNodes = locales
       .map(locale => {
         const nodeId = createNodeId(
-          normalize.makeId({
+          makeId({
             spaceId: space.sys.id,
             id: node.sys.id,
             type: normalizedType,
@@ -456,7 +469,7 @@ export async function sourceNodes(
     // We wait until all nodes are created and processed until we handle the next one
     // TODO add batching in gatsby-core
     await Promise.all(
-      normalize.createNodesForContentType({
+      createNodesForContentType({
         contentTypeItem,
         restrictedNodeFields,
         conflictFieldPrefix,
@@ -482,7 +495,7 @@ export async function sourceNodes(
   for (let i = 0; i < assets.length; i++) {
     // We wait for each asset to be process until handling the next one.
     await Promise.all(
-      normalize.createAssetNodes({
+      createAssetNodes({
         assetItem: assets[i],
         createNode,
         createNodeId,

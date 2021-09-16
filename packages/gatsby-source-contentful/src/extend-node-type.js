@@ -1,10 +1,10 @@
 // @ts-check
-const fs = require(`fs`)
-const path = require(`path`)
-const crypto = require(`crypto`)
+import fs from "fs"
+import path from "path"
+import crypto from "crypto"
 
-const sortBy = require(`lodash/sortBy`)
-const {
+import sortBy from "lodash/sortBy"
+import {
   GraphQLObjectType,
   GraphQLBoolean,
   GraphQLString,
@@ -13,19 +13,19 @@ const {
   GraphQLNonNull,
   GraphQLJSON,
   GraphQLList,
-} = require(`gatsby/graphql`)
-const qs = require(`qs`)
-const { stripIndent } = require(`common-tags`)
+} from "gatsby/graphql"
+import qs from "qs"
+import { stripIndent } from "common-tags"
 
-const cacheImage = require(`./cache-image`)
-const downloadWithRetry = require(`./download-with-retry`).default
-const {
+import { cacheImage } from "./cache-image"
+import { downloadWithRetry } from "./download-with-retry"
+import {
   ImageFormatType,
   ImageResizingBehavior,
   ImageCropFocusType,
   ImageLayoutType,
   ImagePlaceholderType,
-} = require(`./schemes`)
+} from "./schemes"
 
 // By default store the images in `.cache` but allow the user to override
 // and store the image cache away from the gatsby cache. After all, the gatsby
@@ -66,7 +66,7 @@ const isImage = image =>
   )
 
 // Note: this may return a Promise<body>, body (sync), or null
-const getBase64Image = (imageProps, reporter) => {
+export const getBase64Image = (imageProps, reporter) => {
   if (!imageProps) {
     return null
   }
@@ -156,7 +156,6 @@ const getBase64Image = (imageProps, reporter) => {
     return body
   })
 }
-exports.getBase64Image = getBase64Image
 
 const getBasicImageProps = (image, args) => {
   let aspectRatio
@@ -176,7 +175,7 @@ const getBasicImageProps = (image, args) => {
   }
 }
 
-const createUrl = (imgUrl, options = {}) => {
+export const createUrl = (imgUrl, options = {}) => {
   // If radius is -1, we need to pass `max` to the API
   const cornerRadius =
     options.cornerRadius === -1 ? `max` : options.cornerRadius
@@ -200,9 +199,8 @@ const createUrl = (imgUrl, options = {}) => {
   // Note: qs will ignore keys that are `undefined`. `qs.stringify({a: undefined, b: null, c: 1})` => `b=&c=1`
   return `${imgUrl}?${qs.stringify(urlArgs)}`
 }
-exports.createUrl = createUrl
 
-const generateImageSource = (
+export const generateImageSource = (
   filename,
   width,
   height,
@@ -249,8 +247,6 @@ const generateImageSource = (
   return { width, height, format: toFormat, src }
 }
 
-exports.generateImageSource = generateImageSource
-
 const fitMap = new Map([
   [`pad`, `contain`],
   [`fill`, `cover`],
@@ -259,7 +255,7 @@ const fitMap = new Map([
   [`thumb`, `cover`],
 ])
 
-const resolveFixed = (image, options) => {
+export const resolveFixed = (image, options) => {
   if (!isImage(image)) return null
 
   const { baseUrl, width, aspectRatio } = getBasicImageProps(image, options)
@@ -365,9 +361,8 @@ const resolveFixed = (image, options) => {
     srcSet,
   }
 }
-exports.resolveFixed = resolveFixed
 
-const resolveFluid = (image, options) => {
+export const resolveFluid = (image, options) => {
   if (!isImage(image)) return null
 
   const { baseUrl, width, aspectRatio } = getBasicImageProps(image, options)
@@ -456,9 +451,8 @@ const resolveFluid = (image, options) => {
     sizes: options.sizes,
   }
 }
-exports.resolveFluid = resolveFluid
 
-const resolveResize = (image, options) => {
+export const resolveResize = (image, options) => {
   if (!isImage(image)) return null
 
   const { baseUrl, aspectRatio } = getBasicImageProps(image, options)
@@ -495,8 +489,6 @@ const resolveResize = (image, options) => {
     baseUrl,
   }
 }
-
-exports.resolveResize = resolveResize
 
 const fixedNodeType = ({ name, getTracedSVG, reporter }) => {
   return {
@@ -704,13 +696,13 @@ const fluidNodeType = ({ name, getTracedSVG, reporter }) => {
   }
 }
 
-exports.extendNodeType = ({ type, store, reporter }) => {
+export const setFieldsOnGraphQLNodeType = ({ type, store, reporter }) => {
   if (type.name !== `ContentfulAsset`) {
     return {}
   }
 
   const getTracedSVG = async args => {
-    const { traceSVG } = require(`gatsby-plugin-sharp`)
+    const { traceSVG } = await import(`gatsby-plugin-sharp`)
 
     const { image, options } = args
     const {
@@ -740,7 +732,7 @@ exports.extendNodeType = ({ type, store, reporter }) => {
     let pluginSharp
 
     try {
-      pluginSharp = require(`gatsby-plugin-sharp`)
+      pluginSharp = await import(`gatsby-plugin-sharp`)
     } catch (e) {
       console.error(
         `[gatsby-source-contentful] Please install gatsby-plugin-sharp`,
@@ -772,7 +764,7 @@ exports.extendNodeType = ({ type, store, reporter }) => {
   const resolveGatsbyImageData = async (image, options) => {
     if (!isImage(image)) return null
 
-    const { generateImageData } = require(`gatsby-plugin-image`)
+    const { generateImageData } = await import(`gatsby-plugin-image`)
 
     const { baseUrl, contentType, width, height } = getBasicImageProps(
       image,
@@ -840,10 +832,10 @@ exports.extendNodeType = ({ type, store, reporter }) => {
   })
 
   // gatsby-plugin-image
-  const getGatsbyImageData = () => {
-    const {
-      getGatsbyImageFieldConfig,
-    } = require(`gatsby-plugin-image/graphql-utils`)
+  const getGatsbyImageData = async () => {
+    const { getGatsbyImageFieldConfig } = await import(
+      `gatsby-plugin-image/graphql-utils`
+    )
 
     const fieldConfig = getGatsbyImageFieldConfig(resolveGatsbyImageData, {
       jpegProgressive: {

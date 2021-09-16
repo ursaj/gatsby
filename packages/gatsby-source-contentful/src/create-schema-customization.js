@@ -1,12 +1,11 @@
 // @ts-check
-const _ = require(`lodash`)
-const v8 = require(`v8`)
-const fs = require(`fs-extra`)
-
-const { createPluginConfig } = require(`./plugin-options`)
-const { fetchContentTypes } = require(`./fetch`)
-const { CODES } = require(`./report`)
+import fs from "fs-extra"
+import _ from "lodash"
+import v8 from "v8"
+import { fetchContentTypes } from "./fetch"
 import { getFileSystemCachePath } from "./fs-cache"
+import { createPluginConfig } from "./plugin-options"
+import { CODES } from "./report"
 
 export async function createSchemaCustomization(
   { schema, actions, reporter, cache },

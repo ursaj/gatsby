@@ -1,3 +1,4 @@
+// @ts-check
 const _ = require(`lodash`)
 const stringify = require(`json-stringify-safe`)
 
@@ -72,8 +73,6 @@ exports.buildResolvableSet = ({
   entryList,
   existingNodes = [],
   assets = [],
-  locales,
-  defaultLocale,
 }) => {
   const resolvable = new Set()
   existingNodes.forEach(node => {
@@ -100,7 +99,6 @@ exports.buildForeignReferenceMap = ({
   entryList,
   resolvable,
   defaultLocale,
-  locales,
   space,
   useNameForId,
 }) => {
@@ -467,8 +465,7 @@ exports.createNodesForContentType = ({
                 textNodeId,
                 entryNode,
                 entryItemFieldKey,
-                entryItemFields[entryItemFieldKey],
-                createNodeId
+                entryItemFields[entryItemFieldKey]
               )
 
               childrenNodes.push(textNode)
@@ -486,6 +483,7 @@ exports.createNodesForContentType = ({
 
             // Locate all Contentful Links within the rich text data
             const traverse = obj => {
+              // eslint-disable-next-line guard-for-in
               for (const k in obj) {
                 const v = obj[k]
                 if (v && v.sys && v.sys.type === `Link`) {
@@ -535,8 +533,7 @@ exports.createNodesForContentType = ({
                 jsonNodeId,
                 entryNode,
                 entryItemFieldKey,
-                entryItemFields[entryItemFieldKey],
-                createNodeId
+                entryItemFields[entryItemFieldKey]
               )
               childrenNodes.push(jsonNode)
             }
@@ -566,9 +563,7 @@ exports.createNodesForContentType = ({
                   jsonNodeId,
                   entryNode,
                   entryItemFieldKey,
-                  obj,
-                  createNodeId,
-                  i
+                  obj
                 )
                 childrenNodes.push(jsonNode)
               }

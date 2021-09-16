@@ -16,7 +16,13 @@ export async function getFileSystemCachePath({ suffix = null } = {}) {
     .filter(Boolean)
     .join(`-`)
 
-  const fsCacheFileExists = await fs.exists(fsCacheFilePath)
+  let fsCacheFileExists
+  try {
+    await fs.access(process.env.GATSBY_CONTENTFUL_EXPERIMENTAL_FORCE_CACHE)
+    fsCacheFileExists = true
+  } catch (e) {
+    fsCacheFileExists = false
+  }
 
   return {
     fsForceCache: true,

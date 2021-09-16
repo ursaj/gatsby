@@ -1,4 +1,4 @@
-// @todo import syntax!
+// @ts-check
 import _ from "lodash"
 const fs = require(`fs-extra`)
 const v8 = require(`v8`)
@@ -345,9 +345,6 @@ export async function sourceNodes(
     existingNodes,
     entryList,
     assets,
-    defaultLocale,
-    locales,
-    space,
   })
 
   // Build foreign reference map before starting to insert any nodes
@@ -356,7 +353,6 @@ export async function sourceNodes(
     entryList,
     resolvable,
     defaultLocale,
-    locales,
     space,
     useNameForId: pluginConfig.get(`useNameForId`),
   })
@@ -462,7 +458,6 @@ export async function sourceNodes(
     await Promise.all(
       normalize.createNodesForContentType({
         contentTypeItem,
-        contentTypeItems,
         restrictedNodeFields,
         conflictFieldPrefix,
         entries: entryList[i],
